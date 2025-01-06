@@ -171,28 +171,8 @@ jobs:
             # Create the springboot folder if it doesn't exist
             mkdir -p ${{ github.event.inputs.targetrepo }}/springboot
             # Copy the Spring Boot code from CentralizedRepo to the target repo
-            cp -r ./springboot/* ${{ github.event.inputs.targetrepo }}/springboot/
-          
-          elif [ "${{ github.event.inputs.applicationtype }}" == "vm" ]; then
-            echo "Copying vm code to the app repo."
-            # Change to the correct directory (CentralizedRepo without the extra "CentralizedRepo")
-            cd $GITHUB_WORKSPACE  # No need to change directory here either
-          
-            # Create the vm folder if it doesn't exist
-            mkdir -p ${{ github.event.inputs.targetrepo }}/vm
-            # Copy the vm code from CentralizedRepo to the target repo
-            cp -r ./vm/* ${{ github.event.inputs.targetrepo }}/vm/
-
-          elif [ "${{ github.event.inputs.applicationtype }}" == "webapp" ]; then
-            echo "Copying webapp code to the app repo."
-            # Change to the correct directory (CentralizedRepo without the extra "CentralizedRepo")
-            cd $GITHUB_WORKSPACE  # No need to change directory here either
-          
-            # Create the webapp folder if it doesn't exist
-            mkdir -p ${{ github.event.inputs.targetrepo }}/webapp
-            # Copy the webapp code from CentralizedRepo to the target repo
-            cp -r ./webapp/* ${{ github.event.inputs.targetrepo }}/webapp/  
-            
+            cp -r ./springboot/* ${{ github.event.inputs.targetrepo }}/springboot/  
+        
           fi
           
           git diff --exit-code || echo "Changes detected, committing."
