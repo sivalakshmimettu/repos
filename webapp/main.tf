@@ -19,5 +19,7 @@ module "webapp" {
   resource_group_name      = data.azurerm_resource_group.example.name
   location                 = data.azurerm_resource_group.example.location 
   app_service_plan_name = var.app_service_plan_name
+  key_vault_name      = var.key_vault_name
+  secret_name         = var.secret_name
 }
 
