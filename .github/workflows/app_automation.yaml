@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       applicationtype:
-        description: 'The Application type for deployment (dotnet, springboot, terraform)'
+        description: 'The Application type for deployment (dotnet, springboot)'
         required: true
         type: string
       appname:
