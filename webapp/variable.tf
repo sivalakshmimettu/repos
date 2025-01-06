@@ -35,4 +35,21 @@ variable "os_type" {
   type        = string
   default     = "Windows"  # Use "Windows" for a Windows app
 }
+variable "subscription_id" {
+  type        = string
+  default     = "f936a180-7b93-4203-8faa-f376529bd4f8"  # Use "Windows" for a Windows app
+}
+variable "client_id" {
+  type        = string
+  default     = "a2d89136-b086-4755-9f98-af856c2d8c30"  # Use "Windows" for a Windows app
+}
+variable "client_secret" {
+  type        = string
+  default     = "QEt8Q~el5WQ8JWv56IsRMvM5mSJeMHsflwyEJbQ7"  # Use "Windows" for a Windows app
+}
+variable "tenant_id" {
+  type        = string
+  default     = "13085c86-4bcb-460a-a6f0-b373421c6323"  # Use "Windows" for a Windows app
+}
+
 
