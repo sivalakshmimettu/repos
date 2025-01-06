@@ -51,3 +51,16 @@ variable "tenant_id" {
   type        = string
   default     = "13085c86-4bcb-460a-a6f0-b373421c6323"  # Use "Windows" for a Windows app
 }
+# Define the Key Vault name (assuming Key Vault is created manually)
+variable "key_vault_name" {
+  description = "The name of the Azure Key Vault"
+  type        = string
+  default     = "GitHubKVault"  # Name of your manually created Key Vault
+}
+
+# Define the name of the secret to store in Key Vault
+variable "secret_name" {
+  description = "The name of the secret to store in Key Vault"
+  type        = string
+  default     = "clientsecret"
+}
