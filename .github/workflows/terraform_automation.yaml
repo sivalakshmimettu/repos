@@ -1,0 +1,110 @@
+name: Create resource in azure 
+
+on:
+  workflow_dispatch:
+    inputs:
+      orgname:
+        description: 'The name of the target organisation repository'
+        required: true
+        type: string
+      targetrepo:
+        description: 'The name of the target repository for triggering workflows'
+        required: true
+        type: string
+      resourcetype:
+        description: 'The Resource type for deployment'
+        required: true
+        type: string
+      environment:
+        description: 'Environment Name'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stag
+          - prod
+
+jobs:
+  trigger-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AutomationRepos
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.orgname }}/webapptest  # Replace with your automation repo name
+          token: ${{ secrets.GIT_PAT }}  # Use Personal Access Token (PAT) if repository is private
+          ref: main  # Make sure the main branch is specified or change if needed
+
+      - name: List files in the automation repo after checkout
+        run: |
+          echo "Listing files in the automation repo"
+          ls -R .  # List all files in the current directory (root of the checked-out repo)
+
+      - name: Checkout app repo (app repo)
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}  # Use the target repository name from input
+          token: ${{ secrets.GIT_PAT }}  # Use Personal Access Token (PAT) if repository is private
+          path: ${{ github.event.inputs.targetrepo }}  # Checkout app repo in a separate directory
+          ref: main  # Make sure the main branch is specified or change if needed
+
+      - name: List files in the app repo's workflows directory
+        run: |
+          echo "Listing files in the app repo's workflows directory"
+          ls -R ${{ github.event.inputs.targetrepo }}/.github/workflows || echo "Directory not found"
+
+      - name: Create .github/workflows directory in app repo if it doesn't exist
+        run: |
+          # Check if the .github/workflows directory exists in the app repo
+          if [ ! -d "${{ github.event.inputs.targetrepo }}/.github/workflows" ]; then
+            echo "Directory .github/workflows does not exist. Creating directory."
+            mkdir -p ${{ github.event.inputs.targetrepo }}/.github/workflows
+          else
+            echo "Directory .github/workflows already exists."
+          fi
+
+      - name: Check if the file exists in the automation repo
+        run: |
+          TEMPLATE_NAME="template"
+          # Check if the file with .yaml extension exists in the automation repo
+          echo "Checking if $TEMPLATE_NAME.yaml exists in the automation repo."
+          
+          if [ -f ".github/workflows/$TEMPLATE_NAME.yaml" ]; then
+            echo "File exists in the automation repo. Copying the $TEMPLATE_NAME.yaml to the app repo."
+          else
+            echo "File does not exist in the automation repo. Cannot copy."
+            exit 1
+          fi
+
+      - name: Copy $TEMPLATE_NAME.yaml to app repo
+        run: |
+          TEMPLATE_NAME="template"
+          echo "Copying $TEMPLATE_NAME.yaml from automation repo to app repo."
+          cp .github/workflows/$TEMPLATE_NAME.yaml ${{ github.event.inputs.targetrepo }}/.github/workflows/$TEMPLATE_NAME.yaml
+
+          # Check if there are any changes in the repo before committing
+          git diff --exit-code || echo "Changes detected, committing."
+
+          # Change directory to the app repo and commit changes if needed
+          cd ${{ github.event.inputs.targetrepo }}
+          git config --global user.email "naresh.reddivari@valuemomentum.com"
+          git config --global user.name "nareshreddivari"
+          git add .github/workflows/$TEMPLATE_NAME.yaml
+          
+          # Only commit if there are changes
+          git diff --cached --quiet || git commit -m "Added $TEMPLATE_NAME.yaml from automation repo"
+          
+          # Push changes to the repository
+          git push origin main || echo "No changes to push."
+
+      - name: Create pipeline in application repo
+        run: |
+          TEMPLATE_NAME="template"
+          # Trigger the workflow in the application repo
+          echo "Triggering workflow in target application repo."
+          curl -X POST \
+            https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/workflows/$TEMPLATE_NAME.yaml/dispatches \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
+            -d '{"ref":"main","inputs":{"environment":"${{ github.event.inputs.environment }}","resourcetype":"${{ github.event.inputs.resourcetype }}"}}'
