@@ -3,7 +3,7 @@ name: Terraform Deployment with Unit Test Task
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
+      - none  # Trigger on push to main branch
   workflow_dispatch:
     inputs:
       resourcetype:
