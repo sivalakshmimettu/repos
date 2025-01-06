@@ -111,8 +111,8 @@ jobs:
       - name: Check if the required YAML file exists in the app repo
         run: |
           echo "Checking for ${{ github.event.inputs.resourcetype }}.yaml"
-          if [ ! -f ".github/workflows/${{ github.event.inputs.resourcetype }}.yaml" ]; then
-            echo "Error: ${{ github.event.inputs.resourcetype }}.yaml does not exist in the app repo!"
+          if [ ! -f ".github/workflows/template.yaml" ]; then
+            echo "Error: template.yaml does not exist in the app repo!"
             exit 1
           fi
 
