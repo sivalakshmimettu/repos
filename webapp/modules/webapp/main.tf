@@ -17,15 +17,25 @@ provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
   client_id       = var.client_id
-  client_secret  = var.client_secret
+  clientsecret  = var.clientsecret
   tenant_id      = var.tenant_id
 }
-
 
 # Define the resource group
 data "azurerm_resource_group" "example" {
   name     = var.resource_group_name
  }
+# Fetch the Azure Key Vault by its name (manual creation of Key Vault)
+data "azurerm_key_vault" "example" {
+  name                = var.GitHubKVault  # Name of the manually created Key Vault
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+# Fetch the secret from Azure Key Vault
+data "azurerm_key_vault_secret" "example" {
+  name         = var.clientsecret  # Name of the secret stored in the Key Vault
+  key_vault_id = data.azurerm_key_vault.example.id
+}
 
 # Define the Service Plan
 resource "azurerm_service_plan" "example" {
@@ -53,6 +63,6 @@ resource "azurerm_app_service" "example" {
   app_service_plan_id = azurerm_service_plan.example.id
 
   app_settings = {
-    "WEBSITE_NODE_DEFAULT_VERSION" = "14"
+    "clientsecret" = data.azurerm_key_vault_secret.example.value
   }
 }
