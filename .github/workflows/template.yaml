@@ -37,9 +37,21 @@ jobs:
 
     # Step 3: Setup Azure CLI (if required for deployment)
     - name: Setup Azure Login using Service Principal
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Service Principal credentials in JSON format
+      run: |
+        az login --service-principal \
+            -u a2d89136-b086-4755-9f98-af856c2d8c30 \
+            -p ${{ secrets.AZURE_CLIENT_SECRET }} 
+            --tenant 13085c86-4bcb-460a-a6f0-b373421c6323
+            
+    - name: Retrieve secret from Azure Key Vault
+      id: get_secret
+      run: |
+        secret_value=$(az keyvault secret show --name ${{ secrets.clientsecret }} --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
+        echo "SECRET_VALUE=$secret_value" >> $GITHUB_ENV
+
+    - name: Use the secret value
+      run: |
+        echo "The secret value is: $SECRET_VALUE"  
 
     # Step 4: Set up Go
     - name: Set up Go ${{ env.GO_VERSION }}
