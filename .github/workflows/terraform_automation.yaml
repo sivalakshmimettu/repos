@@ -116,23 +116,23 @@ jobs:
             exit 1
           fi
 
-      - name: Copy the application workflow YAML file to app repo
+      - name: Copy the resource workflow YAML file to app repo
         run: |
-          echo "Copying the application workflow YAML to the app repo."
-          cp .github/workflows/${{ github.event.inputs.resourcetype }}.yaml ${{ github.event.inputs.targetrepo }}/.github/workflows/
+          echo "Copying the resource workflow YAML to the app repo."
+          cp .github/workflows/template.yaml ${{ github.event.inputs.targetrepo }}/.github/workflows/
           git diff --exit-code || echo "Changes detected, committing."
           
           cd ${{ github.event.inputs.targetrepo }}
           git config --global user.email "naresh.reddivari@valuemomentum.com"
           git config --global user.name "nareshreddivari"
-          git add .github/workflows/${{ github.event.inputs.resourcetype }}.yaml
+          git add .github/workflows/template.yaml
           
-          git diff --cached --quiet || git commit -m "Added ${{ github.event.inputs.resourcetype }}.yaml from App repo"
+          git diff --cached --quiet || git commit -m "Added template.yaml from App repo"
           
           # Use PAT for git push
           git push https://${{ secrets.GIT_PAT }}@github.com/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}.git main || echo "No changes to push."
 
-      - name: Copy application code to the app repo (based on application type)
+      - name: Copy resource code to the app repo (based on resource type)
         run: |
           # Ensure the folder path is created in the target repository
           if [ "${{ github.event.inputs.resourcetype }}" == "vm" ]; then
@@ -178,7 +178,7 @@ jobs:
           git config --global user.name "nareshreddivari"
           git add .
           
-          git diff --cached --quiet || git commit -m "Added application code from App repo"
+          git diff --cached --quiet || git commit -m "Added resource code from App repo"
           
           # Use PAT for git push
           git push https://${{ secrets.GIT_PAT }}@github.com/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}.git main || echo "No changes to push."
@@ -246,13 +246,13 @@ jobs:
           # Push changes to the repository
           git push origin main || echo "No changes to push."
 
-      - name: Create pipeline in application repo
+      - name: Create pipeline in resource repo
         run: |
           TEMPLATE_NAME="template"
-          # Trigger the workflow in the application repo
-          echo "Triggering workflow in target application repo."
+          # Trigger the workflow in the resource repo
+          echo "Triggering workflow in target resource repo."
           curl -X POST \
             https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/workflows/$TEMPLATE_NAME.yaml/dispatches \
-            -H "Accept: application/vnd.github.v3+json" \
+            -H "Accept: resource/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
             -d '{"ref":"main","inputs":{"environment":"${{ github.event.inputs.environment }}","resourcetype":"${{ github.event.inputs.resourcetype }}"}}'
