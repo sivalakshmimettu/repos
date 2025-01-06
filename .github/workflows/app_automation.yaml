@@ -65,10 +65,10 @@ jobs:
             echo "Repository ${{ github.event.inputs.targetrepo }} already exists."
           fi
 
-      - name: Checkout AppRepos
+      - name: Checkout CentralizedRepo
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.event.inputs.orgname }}/AppRepos
+          repository: ${{ github.event.inputs.orgname }}/CentralizedRepo
           token: ${{ secrets.GIT_PAT }}  # Personal Access Token (PAT)
           ref: main
 
@@ -142,8 +142,8 @@ jobs:
             echo "Listing contents of the current directory:"
             ls -l
           
-            # Ensure you're in the correct directory (AppReposRepos is already included in GITHUB_WORKSPACE)
-            cd $GITHUB_WORKSPACE  # No need to go into AppReposRepos again since it's already in the path
+            # Ensure you're in the correct directory (CentralizedRepo Repos is already included in GITHUB_WORKSPACE)
+            cd $GITHUB_WORKSPACE  # No need to go into CentralizedRepo Repos again since it's already in the path
       
             # Check if the calculator folder exists in the correct path and list its contents
             if [ -d "./calculator" ]; then
@@ -155,7 +155,7 @@ jobs:
               echo "calculator folder does not exist in the expected location. Skipping copy."
             fi
       
-            # Check if calculator.sln file exists in AppRepos root and copy it
+            # Check if calculator.sln file exists in CentralizedRepo root and copy it
             if [ -f "./calculator.sln" ]; then
               echo "calculator.sln file exists, copying to app repo."
               cp ./calculator.sln ${{ github.event.inputs.targetrepo }}/calculator.sln
@@ -165,22 +165,22 @@ jobs:
           
           elif [ "${{ github.event.inputs.applicationtype }}" == "springboot" ]; then
             echo "Copying Spring Boot code to the app repo."
-            # Change to the correct directory (AppRepos without the extra "AppRepos")
+            # Change to the correct directory (CentralizedRepo without the extra "CentralizedRepo")
             cd $GITHUB_WORKSPACE  # No need to change directory here either
           
             # Create the springboot folder if it doesn't exist
             mkdir -p ${{ github.event.inputs.targetrepo }}/springboot
-            # Copy the Spring Boot code from AppRepos to the target repo
+            # Copy the Spring Boot code from CentralizedRepo to the target repo
             cp -r ./springboot/* ${{ github.event.inputs.targetrepo }}/springboot/
           
           elif [ "${{ github.event.inputs.applicationtype }}" == "terraform" ]; then
             echo "Copying Terraform code to the app repo."
-            # Change to the correct directory (AppRepos without the extra "AppRepos")
+            # Change to the correct directory (CentralizedRepo without the extra "CentralizedRepo")
             cd $GITHUB_WORKSPACE  # No need to change directory here either
           
             # Create the terraform folder if it doesn't exist
             mkdir -p ${{ github.event.inputs.targetrepo }}/terraform
-            # Copy the Terraform code from AppRepos to the target repo
+            # Copy the Terraform code from CentralizedRepo to the target repo
             cp -r ./terraform/* ${{ github.event.inputs.targetrepo }}/terraform/
           fi
           
@@ -196,14 +196,14 @@ jobs:
           # Use PAT for git push
           git push https://${{ secrets.GIT_PAT }}@github.com/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}.git main || echo "No changes to push."
 
-      # Step: Get the encrypted secret from AppRepos
-      - name: Get Azure Credentials from AppRepos
+      # Step: Get the encrypted secret from CentralizedRepo
+      - name: Get Azure Credentials from CentralizedRepo
         id: get_secret
         env:
           GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
         run: |
           encrypted_value=$(curl -H "Authorization: Bearer $GIT_PAT" \
-            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/AppRepos/actions/secrets/AZURE_CREDENTIALS" \
+            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/CentralizedRepo/actions/secrets/AZURE_CREDENTIALS" \
             | jq -r '.encrypted_value')
           echo "encrypted_value=$encrypted_value" >> $GITHUB_ENV
 
