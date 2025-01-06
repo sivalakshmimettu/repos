@@ -46,8 +46,7 @@ variable "client_id" {
 }
 variable "client_secret" {
   type        = string
-  default     = "QEt8Q~el5WQ8JWv56IsRMvM5mSJeMHsflwyEJbQ7"  # Use "Windows" for a Windows app
-}
+  }
 variable "tenant_id" {
   type        = string
   default     = "13085c86-4bcb-460a-a6f0-b373421c6323"  # Use "Windows" for a Windows app
