@@ -27,7 +27,7 @@ data "azurerm_resource_group" "example" {
  }
 # Fetch the Azure Key Vault by its name (manual creation of Key Vault)
 data "azurerm_key_vault" "example" {
-  name                = var.GitHubKVault  # Name of the manually created Key Vault
+  name                = var.key_vault_name  # Name of the manually created Key Vault
   resource_group_name = data.azurerm_resource_group.example.name
 }
 
