@@ -35,18 +35,19 @@ jobs:
         echo "Listing the contents of the working directory..."
         ls -al $GITHUB_WORKSPACE
 
-    # Step 3: Setup Azure CLI (if required for deployment)
+    # Step 3: Setup Azure Login using Service Principal
     - name: Setup Azure Login using Service Principal
       run: |
+        echo "Logging in to Azure CLI using Service Principal..."
         az login --service-principal \
-            --username "a2d89136-b086-4755-9f98-af856c2d8c30" \
-            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
-            --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"
-            
+            --username "a2d89136-b086-4755-9f98-af856c2d8c30" \  # Hardcoded Client ID
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \  # Ensure the Client Secret is correctly passed
+            --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"  # Hardcoded Tenant ID
+
     - name: Retrieve secret from Azure Key Vault
       id: get_secret
       run: |
-        secret_value=$(az keyvault secret show --name ${{ secrets.clientsecret }} --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
+        secret_value=$(az keyvault secret show --name "keyvault-githubkvault-clientsecret" --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
         echo "SECRET_VALUE=$secret_value" >> $GITHUB_ENV
 
     - name: Use the secret value
@@ -117,15 +118,6 @@ jobs:
     - name: Terraform Plan
       run: |
         echo "Running Terraform Plan with environment-specific tfvars..."
-        
-        # if [ -z "${{ github.event.inputs.environment }}" ]; then
-        #   ENV_TFVARS="${{ github.event.inputs.resourcetype }}/terraform.tfvars"  # Default path if no environment is provided
-        #   echo "No environment provided, using default tfvars file: ${ENV_TFVARS}"
-        # else
-        #   ENV_TFVARS="${{ github.event.inputs.resourcetype }}/environments/${{ github.event.inputs.environment }}/terraform.tfvars"
-        #   echo "Using environment-specific tfvars file: ${ENV_TFVARS}"
-        # fi
-        
         ENV_TFVARS="${{ github.event.inputs.resourcetype }}/environments/${{ github.event.inputs.environment }}/terraform.tfvars"
         echo "Using environment-specific tfvars file: ${ENV_TFVARS}"
     
@@ -136,15 +128,6 @@ jobs:
     - name: Terraform Apply
       run: |
         echo "Applying Terraform Plan..."
-        
-        # if [ -z "${{ github.event.inputs.environment }}" ]; then
-        #   ENV_TFVARS="${{ github.event.inputs.resourcetype }}/terraform.tfvars"  # Default path if no environment is provided
-        #   echo "No environment provided, using default tfvars file: ${ENV_TFVARS}"
-        # else
-        #   ENV_TFVARS="${{ github.event.inputs.resourcetype }}/environments/${{ github.event.inputs.environment }}/terraform.tfvars"
-        #   echo "Using environment-specific tfvars file: ${ENV_TFVARS}"
-        # fi
-        
         ENV_TFVARS="${{ github.event.inputs.resourcetype }}/environments/${{ github.event.inputs.environment }}/terraform.tfvars"
         echo "Using environment-specific tfvars file: ${ENV_TFVARS}"
         
