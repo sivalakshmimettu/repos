@@ -33,7 +33,7 @@ data "azurerm_key_vault" "example" {
 
 # Fetch the secret from Azure Key Vault
 data "azurerm_key_vault_secret" "example" {
-  name         = var.client_secret  # Name of the secret stored in the Key Vault
+  name         = var.secret_name  # Name of the secret stored in the Key Vault
   key_vault_id = data.azurerm_key_vault.example.id
 }
 
