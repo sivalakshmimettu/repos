@@ -258,14 +258,15 @@ jobs:
         run: |
           echo "Public Key: ${{ env.public_key }}"  # Print to verify the key format
           echo "-----BEGIN PUBLIC KEY-----" > public_key.pem
-          echo "${{ env.public_key }}" | base64 --decode >> public_key.pem
-          echo "-----END PUBLIC KEY-----" >> public_key.pem
+          echo "${{ env.public_key }}" >> public_key.pem  # Append base64 public key
+          echo "-----END PUBLIC KEY-----" >> public_key.pem  # End the PEM format
+      
           cat public_key.pem  # Verify PEM file contents
       
       # Step: Encrypt the secret with OpenSSL
       - name: Encrypt Azure Client Secret
         run: |
-          # Encrypt the secret with OpenSSL
+          # Encrypt the secret with OpenSSL using the PEM file
           encrypted_secret=$(echo -n "${{ env.CLIENT_SECRET }}" | openssl pkeyutl -encrypt -inkey public_key.pem -pubin | base64)
           
           # Check if encryption is successful
