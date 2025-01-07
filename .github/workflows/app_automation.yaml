@@ -231,28 +231,32 @@ jobs:
       - name: Get Azure Credentials from CentralizedRepo
         id: get_secret
         env:
-          GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
+          GIT_PAT: ${{ secrets.GIT_PAT }}
         run: |
           encrypted_value=$(curl -H "Authorization: Bearer $GIT_PAT" \
             -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/CentralizedRepo/actions/secrets/AZURE_CREDENTIALS" \
             | jq -r '.encrypted_value')
           echo "encrypted_value=$encrypted_value" >> $GITHUB_ENV
 
-      # Step 3: Get the public key from the target repo to encrypt the secret
+      # Step 3: Get public key for target repo
       - name: Get public key for target repo
         id: get_public_key
         env:
-          GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
+          GIT_PAT: ${{ secrets.GIT_PAT }}
         run: |
           key_id=$(curl -H "Authorization: Bearer $GIT_PAT" \
             -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/public-key" \
             | jq -r '.key_id')
+          public_key=$(curl -H "Authorization: Bearer $GIT_PAT" \
+            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/public-key" \
+            | jq -r '.key')
           echo "key_id=$key_id" >> $GITHUB_ENV
+          echo "public_key=$public_key" >> $GITHUB_ENV
 
-      # Step 4: Encrypt the fetched Azure Client Secret using the public key
+      # Step 4: Encrypt the Azure Client Secret using the public key
       - name: Encrypt Azure Client Secret
         run: |
-          encrypted_secret=$(echo -n "${{ env.CLIENT_SECRET }}" | openssl rsautl -encrypt -inkey <(echo "${{ env.public_key }}" | base64 --decode) -pubin | base64)
+          encrypted_secret=$(echo -n "${{ env.CLIENT_SECRET }}" | openssl pkeyutl -encrypt -inkey <(echo "${{ env.public_key }}" | base64 --decode) -pubin | base64)
           echo "encrypted_value=$encrypted_secret" >> $GITHUB_ENV
 
       # Step 5: Set the encrypted Azure Client Secret in the target repo
