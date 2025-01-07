@@ -223,7 +223,7 @@ jobs:
           
       - name: Fetch Azure Client Secret from Key Vault
         run: |
-          client_secret=$(az keyvault secret show --name "clientsecret" --vault-name "GitHubKVault" --query value -o tsv)
+          client_secret=$(az keyvault secret show --name "clientsecret1" --vault-name "GitHubKVault" --query value -o tsv)
           echo "CLIENT_SECRET=$client_secret" >> $GITHUB_ENV  # Set the secret as environment variable for next steps
 
       # Step 2: Get the public key for the target repo
