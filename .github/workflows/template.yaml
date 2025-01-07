@@ -3,18 +3,18 @@ name: Terraform Deployment with Unit Test Task
 on:
   push:
     branches:
-      - none  # Trigger on push to main branch
+      - none  # Trigger on push to the main branch
   workflow_dispatch:
     inputs:
       resourcetype:
-        description: 'resourcetype to deploy (e.g., VM , Webapp)'
+        description: 'resourcetype to deploy (e.g., VM, Webapp)'
         required: true
         default: 'vm'  # Default value for resourcetype input
       environment:
         description: 'Environment to deploy (e.g., dev, prod)'
         required: false
         default: 'dev'  # Default value for environment input
-      
+          
 jobs:
   terraform-deployment:
     runs-on: ubuntu-latest
@@ -40,9 +40,9 @@ jobs:
       run: |
         echo "Logging in to Azure CLI using Service Principal..."
         az login --service-principal \
-            -username "a2d89136-b086-4755-9f98-af856c2d8c30" \  # Hardcoded Client ID
-            -p "${{ secrets.AZURE_CLIENT_SECRET }}" \ # Ensure the Client Secret is correctly passed
-            --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"  # Hardcoded Tenant ID
+            --username "${{ secrets.AZURE_CLIENT_ID }}" \  # GitHub secret for Client ID
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \  # GitHub secret for Client Secret
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"  # GitHub secret for Tenant ID
 
     - name: Retrieve secret from Azure Key Vault
       id: get_secret
