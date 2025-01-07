@@ -35,25 +35,20 @@ jobs:
         echo "Listing the contents of the working directory..."
         ls -al $GITHUB_WORKSPACE
 
-    # Step 3: Install Azure CLI (optional, in case it's not already installed)
-    - name: Install Azure CLI
-      run: |
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
     # Step 4: Setup Azure Login using Service Principal
     - name: Setup Azure Login using Service Principal
       run: |
         echo "Logging in to Azure CLI using Service Principal..."
         az login --service-principal \
-            --username a2d89136-b086-4755-9f98-af856c2d8c30 \  # GitHub secret for Client ID
-            --password ${{ secrets.AZURE_CLIENT_SECRET }} \  # GitHub secret for Client Secret
+            --u a2d89136-b086-4755-9f98-af856c2d8c30 \  # GitHub secret for Client ID
+            --p ${{ secrets.AZURE_CLIENT_SECRET }} \  # GitHub secret for Client Secret
             --tenant 13085c86-4bcb-460a-a6f0-b373421c6323  # GitHub secret for Tenant ID
 
     # Step 5: Retrieve secret from Azure Key Vault
     - name: Retrieve secret from Azure Key Vault
       id: get_secret
       run: |
-        secret_value=$(az keyvault secret show --name "keyvault-githubkvault-clientsecret" --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
+        secret_value=$(az keyvault secret show --name "clientsecret1" --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
         echo "SECRET_VALUE=$secret_value" >> $GITHUB_ENV
 
     # Step 6: Use the secret value
