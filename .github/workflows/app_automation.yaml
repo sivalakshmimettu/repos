@@ -253,12 +253,19 @@ jobs:
           echo "key_id=$key_id" >> $GITHUB_ENV
           echo "public_key=$public_key" >> $GITHUB_ENV
 
-      # Step 4: Encrypt the Azure Client Secret using the public key
+      # Step 4: Decode public key and encrypt the secret using OpenSSL
       - name: Encrypt Azure Client Secret
         run: |
-          # Decode public key and encrypt the secret using OpenSSL
-          echo "${{ env.public_key }}" | base64 --decode > public_key.pem
+          # Decode public key and save to PEM file
+          echo "-----BEGIN PUBLIC KEY-----" > public_key.pem
+          echo "${{ env.public_key }}" | base64 --decode >> public_key.pem
+          echo "-----END PUBLIC KEY-----" >> public_key.pem
+
+          # Encrypt the secret using OpenSSL
           encrypted_secret=$(echo -n "${{ env.CLIENT_SECRET }}" | openssl pkeyutl -encrypt -inkey public_key.pem -pubin | base64)
+          
+          # Check if encryption is successful
+          echo "Encrypted Secret: $encrypted_secret"
           
           # Output the encrypted value to GitHub environment
           echo "encrypted_value=$encrypted_secret" >> $GITHUB_ENV
