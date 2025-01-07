@@ -61,6 +61,6 @@ variable "key_vault_name" {
 variable "secret_name" {
   description = "The name of the secret to store in Key Vault"
   type        = string
-  default     = "clientsecret"
+  default     = "clientsecret1"
 }
 
