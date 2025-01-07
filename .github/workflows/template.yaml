@@ -45,9 +45,9 @@ jobs:
       run: |
         echo "Logging in to Azure CLI using Service Principal..."
         az login --service-principal \
-            --username "a2d89136-b086-4755-9f98-af856c2d8c30" \  # GitHub secret for Client ID
-            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \  # GitHub secret for Client Secret
-            --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"  # GitHub secret for Tenant ID
+            --username a2d89136-b086-4755-9f98-af856c2d8c30 \  # GitHub secret for Client ID
+            --password ${{ secrets.AZURE_CLIENT_SECRET }} \  # GitHub secret for Client Secret
+            --tenant 13085c86-4bcb-460a-a6f0-b373421c6323  # GitHub secret for Tenant ID
 
     # Step 5: Retrieve secret from Azure Key Vault
     - name: Retrieve secret from Azure Key Vault
