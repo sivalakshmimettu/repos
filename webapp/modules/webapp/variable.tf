@@ -3,13 +3,13 @@
 variable "resource_group_name" {
   description = "The name of the Azure resource group"
   type        = string
-  default     = "vam-rg-nov"
+  default     = "Geicoautomationscript"
 }
 
 #variable "location" {
   #description = "The Azure region where resources will be created"
   #type        = string
-  #default     = "West US 2"
+  #default     = "East US"
 #}
 
 variable "app_service_plan_name" {
