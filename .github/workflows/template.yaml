@@ -39,9 +39,9 @@ jobs:
     - name: Setup Azure Login using Service Principal
       run: |
         az login --service-principal \
-            -u a2d89136-b086-4755-9f98-af856c2d8c30 \
-            -p ${{ secrets.AZURE_CLIENT_SECRET }} \
-            --tenant 13085c86-4bcb-460a-a6f0-b373421c6323
+            --username "a2d89136-b086-4755-9f98-af856c2d8c30" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"
             
     - name: Retrieve secret from Azure Key Vault
       id: get_secret
