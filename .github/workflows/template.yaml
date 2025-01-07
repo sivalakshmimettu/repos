@@ -14,11 +14,7 @@ on:
         description: 'Environment to deploy (e.g., dev, prod)'
         required: false
         default: 'dev'  # Default value for environment input
-      secret:
-        description: 'secret'
-        required: true
-        default: ''  
-
+      
 jobs:
   terraform-deployment:
     runs-on: ubuntu-latest
@@ -45,7 +41,7 @@ jobs:
         echo "Logging in to Azure CLI using Service Principal..."
         az login --service-principal \
             --username "a2d89136-b086-4755-9f98-af856c2d8c30" \  # Hardcoded Client ID
-            --password "${{ github.event.inputs.secret }}" \  # Ensure the Client Secret is correctly passed
+            --password "QEt8Q~el5WQ8JWv56IsRMvM5mSJeMHsflwyEJbQ7" \  # Ensure the Client Secret is correctly passed
             --tenant "13085c86-4bcb-460a-a6f0-b373421c6323"  # Hardcoded Tenant ID
 
     - name: Retrieve secret from Azure Key Vault
