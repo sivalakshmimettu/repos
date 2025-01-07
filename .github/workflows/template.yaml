@@ -3,7 +3,7 @@ name: Terraform Deployment with Unit Test Task
 on:
   push:
     branches:
-      - none  # Trigger on push to the main branch
+      - none  # Trigger on push to main branch
   workflow_dispatch:
     inputs:
       resourcetype:
@@ -14,7 +14,7 @@ on:
         description: 'Environment to deploy (e.g., dev, prod)'
         required: false
         default: 'dev'  # Default value for environment input
-          
+
 jobs:
   terraform-deployment:
     runs-on: ubuntu-latest
@@ -35,7 +35,12 @@ jobs:
         echo "Listing the contents of the working directory..."
         ls -al $GITHUB_WORKSPACE
 
-    # Step 3: Setup Azure Login using Service Principal
+    # Step 3: Install Azure CLI (optional, in case it's not already installed)
+    - name: Install Azure CLI
+      run: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    # Step 4: Setup Azure Login using Service Principal
     - name: Setup Azure Login using Service Principal
       run: |
         echo "Logging in to Azure CLI using Service Principal..."
@@ -44,47 +49,49 @@ jobs:
             --password "${{ secrets.AZURE_CLIENT_SECRET }}" \  # GitHub secret for Client Secret
             --tenant "${{ secrets.AZURE_TENANT_ID }}"  # GitHub secret for Tenant ID
 
+    # Step 5: Retrieve secret from Azure Key Vault
     - name: Retrieve secret from Azure Key Vault
       id: get_secret
       run: |
         secret_value=$(az keyvault secret show --name "keyvault-githubkvault-clientsecret" --vault-name ${{ secrets.GitHubKVault }} --query value -o tsv)
         echo "SECRET_VALUE=$secret_value" >> $GITHUB_ENV
 
+    # Step 6: Use the secret value
     - name: Use the secret value
       run: |
         echo "The secret value is: $SECRET_VALUE"  
 
-    # Step 4: Set up Go
+    # Step 7: Set up Go
     - name: Set up Go ${{ env.GO_VERSION }}
       uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
 
-    # Step 5: Install Terraform
+    # Step 8: Install Terraform
     - name: Install Terraform ${{ env.TF_VERSION }}
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ env.TF_VERSION }}
 
-    # Step 6: Clean Go cache (to resolve dependency issues)
+    # Step 9: Clean Go cache (to resolve dependency issues)
     - name: Clean Go Cache
       run: |
         echo "Cleaning Go Cache..."
         go clean -modcache
 
-    # Step 7: Initialize Terraform
+    # Step 10: Initialize Terraform
     - name: Terraform Init
       run: |
         echo "Initializing Terraform..."
         terraform -chdir=${{ env.TF_WORKING_DIR }} init -upgrade
 
-    # Step 8: Validate Terraform configuration
+    # Step 11: Validate Terraform configuration
     - name: Terraform Validate
       run: |
         echo "Validating Terraform configuration..."
         terraform -chdir=${{ env.TF_WORKING_DIR }} validate
 
-    # Step 9: Run Unit Tests using Go with Terratest
+    # Step 12: Run Unit Tests using Go with Terratest
     - name: Run Unit Tests with Terratest
       run: |
         echo "Running Unit Tests with Terratest"
@@ -114,7 +121,7 @@ jobs:
         go mod tidy
         go test -v
 
-    # Step 10: Terraform Plan with environment-specific variables
+    # Step 13: Terraform Plan with environment-specific variables
     - name: Terraform Plan
       run: |
         echo "Running Terraform Plan with environment-specific tfvars..."
@@ -124,7 +131,7 @@ jobs:
         # Plan with correct path to tfvars file
         terraform -chdir=${{ env.TF_WORKING_DIR }} plan -out=tfplan -var-file=${{ github.workspace }}/${ENV_TFVARS}
 
-    # Step 11: Apply Terraform Plan (auto-approve for CI/CD)
+    # Step 14: Apply Terraform Plan (auto-approve for CI/CD)
     - name: Terraform Apply
       run: |
         echo "Applying Terraform Plan..."
@@ -134,7 +141,7 @@ jobs:
         # Apply with correct path to tfvars file
         terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve -var-file=${{ github.workspace }}/${ENV_TFVARS}
 
-    # Step 12: Remove terraform.lock file after apply
+    # Step 15: Remove terraform.lock file after apply
     - name: Remove terraform.lock.hcl
       run: |
         echo "Removing terraform.lock.hcl after applying..."
