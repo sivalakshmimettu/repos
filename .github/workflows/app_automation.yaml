@@ -254,13 +254,13 @@ jobs:
           echo "public_key=$public_key" >> $GITHUB_ENV
     
       # Step: Decode public key and save to PEM file
-      - name: Decode public key and save to PEM file
+      - name: Decode and Save Public Key as PEM
         run: |
           echo "Public Key: ${{ env.public_key }}"  # Print to verify the key format
           echo "-----BEGIN PUBLIC KEY-----" > public_key.pem
-          echo "${{ env.public_key }}" >> public_key.pem  # Append base64 public key
+          echo "$(${public_key} | base64 -d)" >> public_key.pem
           echo "-----END PUBLIC KEY-----" >> public_key.pem  # End the PEM format
-      
+          
           cat public_key.pem  # Verify PEM file contents
       
       # Step: Encrypt the secret with OpenSSL
