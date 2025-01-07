@@ -63,6 +63,6 @@ resource "azurerm_app_service" "example" {
   app_service_plan_id = azurerm_service_plan.example.id
 
   app_settings = {
-    "clientsecret" = data.azurerm_key_vault_secret.example.value
+    "clientsecret1" = data.azurerm_key_vault_secret.example.value
   }
 }
