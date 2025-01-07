@@ -184,10 +184,6 @@ jobs:
           git push https://${{ secrets.GIT_PAT }}@github.com/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}.git main || echo "No changes to push."
 
 
-  azure-login:
-    runs-on: ubuntu-latest
-
-    steps:
       # Step 1: Get Azure Client Secret from the CentralizedRepo
       - name: Get Azure Client Secret from CentralizedRepo
         id: get_client_secret
