@@ -15,21 +15,32 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id ="f936a180-7b93-4203-8faa-f376529bd4f8"
-  client_id       ="a2d89136-b086-4755-9f98-af856c2d8c30"
-  client_secret  = "QEt8Q~el5WQ8JWv56IsRMvM5mSJeMHsflwyEJbQ7"
-  tenant_id      = "13085c86-4bcb-460a-a6f0-b373421c6323"
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret  = var.client_secret
+  tenant_id      = var.tenant_id
 }
 
-resource "azurerm_resource_group" "example" {
+# Define the resource group
+data "azurerm_resource_group" "example" {
   name     = var.resource_group_name
-  location = var.location
+ }
+# Fetch the Azure Key Vault by its name (manual creation of Key Vault)
+data "azurerm_key_vault" "example" {
+  name                = var.key_vault_name  # Name of the manually created Key Vault
+  resource_group_name = data.azurerm_resource_group.example.name
+}
+
+# Fetch the secret from Azure Key Vault
+data "azurerm_key_vault_secret" "example" {
+  name         = var.secret_name  # Name of the secret stored in the Key Vault
+  key_vault_id = data.azurerm_key_vault.example.id
 }
 
 resource "azurerm_network_security_group" "example" {
   name                = "example-nsg"
   location            = var.location
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = data.azurerm_resource_group.example.name
   
   security_rule {
     name                       = "Allow-SSH"
@@ -43,16 +54,16 @@ resource "azurerm_network_security_group" "example" {
     destination_address_prefix = "*"
   }
 
-  depends_on = [azurerm_resource_group.example]  # Ensure the resource group is created first
+  depends_on = [data.azurerm_resource_group.example.name]  # Ensure the resource group is created first
 }
 
 resource "azurerm_virtual_network" "example" {
   name                = var.virtual_network_name
   location            = var.location
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = data.azurerm_resource_group.example.name
   address_space       = var.address_space
 
-  depends_on = [azurerm_resource_group.example]  # Ensure the resource group is created first
+  depends_on = [data.azurerm_resource_group.example.name]  # Ensure the resource group is created first
 }
 
 
@@ -60,13 +71,13 @@ resource "azurerm_subnet" "example" {
   name                 = var.subnet_name
   address_prefixes     = [var.subnet_address_prefix]  # This should be a list, so wrap it in []
   virtual_network_name = azurerm_virtual_network.example.name
-  resource_group_name  = var.resource_group_name
+  resource_group_name  = data.azurerm_resource_group.example.name
 }
 
 resource "azurerm_network_interface" "example" {
   name                = "example-nic"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = data.azurerm_resource_group.example.name
 
   ip_configuration {
     name                          = "internal"
@@ -80,7 +91,7 @@ resource "azurerm_virtual_machine" "example" {
   count               = (var.vm_name != "" && var.vm_size != "") ? 1 : 0
   name                  = var.vm_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = data.azurerm_resource_group.example.name
   network_interface_ids = [azurerm_network_interface.example.id]
   vm_size               = var.vm_size
 
