@@ -54,7 +54,7 @@ resource "azurerm_network_security_group" "example" {
     destination_address_prefix = "*"
   }
 
-  depends_on = [data.azurerm_resource_group.example.name]  # Ensure the resource group is created first
+  depends_on = [data.azurerm_resource_group.example]  # Ensure the resource group is created first
 }
 
 resource "azurerm_virtual_network" "example" {
@@ -63,7 +63,7 @@ resource "azurerm_virtual_network" "example" {
   resource_group_name = data.azurerm_resource_group.example.name
   address_space       = var.address_space
 
-  depends_on = [data.azurerm_resource_group.example.name]  # Ensure the resource group is created first
+  depends_on = [data.azurerm_resource_group.example]  # Ensure the resource group is created first
 }
 
 
