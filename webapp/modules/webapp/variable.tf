@@ -6,11 +6,11 @@ variable "resource_group_name" {
   default     = "Geicoautomationscript"
 }
 
-#variable "location" {
-  #description = "The Azure region where resources will be created"
-  #type        = string
-  #default     = "East US"
-#}
+variable "location" {
+  description = "The Azure region where resources will be created"
+  type        = string
+  default     = "East US"
+}
 
 variable "app_service_plan_name" {
   description = "The name of the App Service Plan"
