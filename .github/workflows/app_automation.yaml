@@ -187,69 +187,35 @@ jobs:
           # Use PAT for git push
           git push https://${{ secrets.GIT_PAT }}@github.com/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}.git main || echo "No changes to push."
 
-      # # Step: Get the encrypted secret from CentralizedRepo
-      # - name: Get Azure Credentials from CentralizedRepo
-      #   id: get_secret
-      #   env:
-      #     GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
-      #   run: |
-      #     encrypted_value=$(curl -H "Authorization: Bearer $GIT_PAT" \
-      #       -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/CentralizedRepo/actions/secrets/AZURE_CREDENTIALS" \
-      #       | jq -r '.encrypted_value')
-      #     echo "encrypted_value=$encrypted_value" >> $GITHUB_ENV
-
-      # # Step : Get the public key from the target repo to encrypt the secret
-      # - name: Get public key for target repo
-      #   id: get_public_key
-      #   env:
-      #     GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
-      #   run: |
-      #     key_id=$(curl -H "Authorization: Bearer $GIT_PAT" \
-      #       -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/public-key" \
-      #       | jq -r '.key_id')
-      #     echo "key_id=$key_id" >> $GITHUB_ENV
-
-      # # Step : Set the secret in the target repo
-      # - name: Set Azure Credentials in Target Repo
-      #   run: |
-      #     curl -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
-      #       -X PUT "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/AZURE_CREDENTIALS" \
-      #       -d '{"encrypted_value": "${{ env.encrypted_value }}", "key_id": "${{ env.key_id }}"}'
-      
-      - name: Setup Azure Login using Service Principal
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-      - name: Fetch Azure Client Secret from Key Vault
+      # Step: Get the encrypted secret from CentralizedRepo
+      - name: Get Azure Credentials from CentralizedRepo
+        id: get_secret
+        env:
+          GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
         run: |
-          client_secret=$(az keyvault secret show --name "clientsecret1" --vault-name "GitHubKVault" --query value -o tsv)
-          echo "CLIENT_SECRET=$client_secret" >> $GITHUB_ENV  # Set the secret as environment variable for next steps
+          encrypted_value=$(curl -H "Authorization: Bearer $GIT_PAT" \
+            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/CentralizedRepo/actions/secrets/AZURE_CREDENTIALS" \
+            | jq -r '.encrypted_value')
+          echo "encrypted_value=$encrypted_value" >> $GITHUB_ENV
 
-      # Step 2: Get the public key for the target repo
+      # Step : Get the public key from the target repo to encrypt the secret
       - name: Get public key for target repo
+        id: get_public_key
+        env:
+          GIT_PAT: ${{ secrets.GIT_PAT }}  # Ensure GIT_PAT is available as an env variable
         run: |
-          response=$(curl -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
-            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/public-key")
-          key_id=$(echo $response | jq -r '.key_id')
-          public_key=$(echo $response | jq -r '.key')
+          key_id=$(curl -H "Authorization: Bearer $GIT_PAT" \
+            -X GET "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/public-key" \
+            | jq -r '.key_id')
           echo "key_id=$key_id" >> $GITHUB_ENV
-          echo "public_key=$public_key" >> $GITHUB_ENV
 
-      # Step 3: Encrypt the client secret using the public key
-      - name: Encrypt the client secret using the public key
+      # Step : Set the secret in the target repo
+      - name: Set Azure Credentials in Target Repo
         run: |
-          encrypted_secret=$(echo -n "${{ env.CLIENT_SECRET }}" | openssl rsautl -encrypt -inkey <(echo "${{ env.public_key }}" | base64 --decode) -pubin | base64)
-          echo "encrypted_value=$encrypted_secret" >> $GITHUB_ENV
+          curl -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
+            -X PUT "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/AZURE_CREDENTIALS" \
+            -d '{"encrypted_value": "${{ env.encrypted_value }}", "key_id": "${{ env.key_id }}"}'
 
-      # Step 4: Set the secret in the target repo
-      - name: Set the Azure Client Secret in Target Repo
-        run: |
-          curl -X PUT \
-            -H "Authorization: Bearer ${{ secrets.GIT_PAT }}" \
-            -d '{"encrypted_value": "${{ env.encrypted_value }}", "key_id": "${{ env.key_id }}"}' \
-            "https://api.github.com/repos/${{ github.event.inputs.orgname }}/${{ github.event.inputs.targetrepo }}/actions/secrets/AZURE_CLIENT_SECRET"
-            
       - name: Trigger pipeline in the application repo
         run: |
           echo "Triggering workflow in target application repo."
