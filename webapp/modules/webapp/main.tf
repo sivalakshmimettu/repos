@@ -40,7 +40,7 @@ data "azurerm_key_vault_secret" "example" {
 # Define the Service Plan
 resource "azurerm_service_plan" "example" {
   name                = var.app_service_plan_name
-  location            = data.azurerm_resource_group.example.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.example.name
 
   # Define SKU attributes directly
@@ -58,7 +58,7 @@ resource "random_string" "unique" {
 # Define the Web App
 resource "azurerm_app_service" "example" {
   name                = "${var.web_app_name}-${random_string.unique.result}"
-  location            = data.azurerm_resource_group.example.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.example.name
   app_service_plan_id = azurerm_service_plan.example.id
 
