@@ -1,4 +1,4 @@
-resource_group_name = "vam-rg-new1"
+resource_group_name = "Geicoautomationscript"
 location            = "West US 2"
 virtual_network_name  = "dev-vnet"
 address_space         = ["10.0.0.0/16"]
