@@ -91,7 +91,7 @@ resource "azurerm_network_interface" "example" {
 
 # New Virtual Machine resource
 resource "azurerm_virtual_machine" "example" {
-  count               = (var.vm_name != "" && var.vm_size != "") ? 1 : 0
+  #count               = (var.vm_name != "" && var.vm_size != "") ? 1 : 0
   name                  = var.vm_name
   location              = var.location
   resource_group_name   = data.azurerm_resource_group.example.name
