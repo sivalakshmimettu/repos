@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TF_WORKING_DIR: ${{ github.workspace }}/${{ github.event.inputs.resourcetype }}/modules/${{ github.event.inputs.resourcetype }}  # Correct working directory
+      TF_WORKING_DIR: ${{ github.workspace }}/${{ github.event.inputs.resourcetype }}  # Correct working directory
       TF_VERSION: '1.3.5'  # Specify the Terraform version
 
     steps:
@@ -63,7 +63,7 @@ jobs:
     - name: Terraform Plan
       run: |
         echo "Running Terraform Plan with environment-specific tfvars..."
-        ENV_TFVARS="${{ github.event.inputs.resourcetype }}/environments/${{ github.event.inputs.environment }}/terraform.tfvars"
+        ENV_TFVARS="${{ github.event.inputs.resourcetype }}/terraform.tfvars"
         echo "Using environment-specific tfvars file: ${ENV_TFVARS}"
     
         # Run Terraform Plan with the correct path to tfvars file
