@@ -72,6 +72,9 @@ resource "azurerm_subnet" "example" {
   address_prefixes     = [var.subnet_address_prefix]  # This should be a list, so wrap it in []
   virtual_network_name = azurerm_virtual_network.example.name
   resource_group_name  = data.azurerm_resource_group.example.name
+
+# Associate the NSG with the subnet
+  network_security_group_id = azurerm_network_security_group.example.id
 }
 
 resource "azurerm_network_interface" "example" {
